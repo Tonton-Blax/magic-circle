@@ -9,22 +9,22 @@ export default {
     _scales : [[],[]],
 
     _wheel : [[],[]],
-    
+
     // Basic Getters and Setters.
     // wIdx arg passed  in most funcs is the "wheel index"
     // Two wheels = two scales, two series of similar datam, therefore most data is stored in bi-dimensiona arrays
 
-    _tones : [ 
+    _tones : [
         ['C','G','D','A','E','B','Gb','Db', 'Ab','Eb','Bb','F'],
         ['C','G','D','A','E','B','F#','C#','G#','D#','A#','F']
    ],
 
 
     setWheel (fun, wIdx, flavor)
-    { 
+    {
         this._wheel[wIdx] = [];
         let x = this.order == '+' ? 0 : 4;
-        this._wheel[wIdx][0]=(pianissimo.note(fun || this.fundamental));    
+        this._wheel[wIdx][0]=(pianissimo.note(fun || this.fundamental));
         for (let i = 1; i < (this.gamut); i++) {
             //this._wheel[wIdx][i] = this._wheel[wIdx][i-1].plusInterval(this.interval, this.order);
             this._wheel[wIdx][i] = pianissimo.note(`${this._tones[flavor][i]}${x}`)
@@ -52,22 +52,22 @@ export default {
         let abcScale = []; let length; let extraChar = '';
         length = scale.length;
         for (let i = 0; i < length; i++) {
-            
+
             abcScale[i] = scale[i].getRootName().toUpperCase();
 
             switch ( scale[i].getOctave() ) {
 
-                case 2: 
+                case 2:
                     extraChar=","; break;
-                case 3: 
+                case 3:
                     extraChar=""; break;
-                case 4: 
+                case 4:
                     abcScale[i]=abcScale[i].toLowerCase(); break;
                 case 5:
                    extraChar="'";break;
                 default : extraChar;
             }
-            
+
             switch (scale[i].getAlteration()) {
 
                 case '#' :
@@ -90,37 +90,28 @@ export default {
 
     matchAbc (scale)
     {
-        let abcScale = []; let length; let extraChar = '';
-        if (scale.constructor.name == 'Chord') { 
-            length = scale.getNotesName().length; extraChar='';
-        }
-            else if (scale.constructor.name == 'Scale') {
-                length = scale.scale.length;
-            } 
-                else if (scale.constructor.name == 'Array') { 
-                    length = scale.length; isArr=true;
-                } 
-                else {
-                    return;
-        }
-        
+        let abcScale = [];
+        let extraChar = '';
+
+        const length = (scale.scale || scale.getNotesName()).length;
+
         for (let i = 0; i < length; i++) {
-            
+
             abcScale[i] = scale.getNotes()[i].getRootName().toUpperCase();
 
             switch ( scale.getNotes()[i].getOctave() ) {
 
-                case 2: 
+                case 2:
                     extraChar=","; break;
-                case 3: 
+                case 3:
                     extraChar=""; break;
-                case 4: 
+                case 4:
                     abcScale[i]=abcScale[i].toLowerCase(); break;
                 case 5:
                    extraChar="'";break;
                 default : extraChar;
             }
-            
+
             switch (scale.getNotes()[i].getAlteration()) {
 
                 case '#' :
@@ -134,10 +125,10 @@ export default {
                 default : `${abcScale[i]}${extraChar}`;
             }
         }
-        
+
         return abcScale;
     },
-            
+
     palette : { main :'#006989', tonic: '#C43835', out: '#2D3336', chord: '#084' },
 
     _colors : [[],[]],
@@ -151,10 +142,10 @@ export default {
 
     // matchWheel (wIdx)
     // sets the above props of a given wheel according to scales previously set
-    
-    matchWheel (wIdx) 
-    {   
-        this._colors[wIdx] = []; this._names[wIdx] = []; this._chordsStrings[wIdx] = []; this._scaleDelta[wIdx]=[]; 
+
+    matchWheel (wIdx)
+    {
+        this._colors[wIdx] = []; this._names[wIdx] = []; this._chordsStrings[wIdx] = []; this._scaleDelta[wIdx]=[];
         this._chords3[wIdx] = []; this._chords4[wIdx] =  []; this._chords5[wIdx] =  []
 
         for (let i = 0; i < this._wheel[wIdx].length ; i++) { // Global Data Pre-fill
@@ -169,26 +160,26 @@ export default {
 
         if (this._wheel[wIdx].length &&  this._scales[wIdx].getNotes().length) {
             for (let x = 0; x <  this._scales[wIdx].getNotes().length; x++) {
-                for (let i = 0; i < this._wheel[wIdx].length ; i++) {        
+                for (let i = 0; i < this._wheel[wIdx].length ; i++) {
 
                     // Checks for enharmonics via MIDI :
                     if (( this._scales[wIdx].getNotes()[x].getMidiNumber() - this._wheel[wIdx][i].getMidiNumber()) % 12 == 0) {
                         x == 0 ? this._colors[wIdx][i] = this.palette.tonic : this._colors[wIdx][i] = this.palette.main;
                         this._names[wIdx][i] =  this._scales[wIdx].getNotes()[x].getRoot();
-                        this._chordsStrings[wIdx][i] = 
+                        this._chordsStrings[wIdx][i] =
                         (`${this._chords3[wIdx][x].findBestName()} , ${this._chords4[wIdx][x].findBestName()} , ${this._chords5[wIdx][x].findBestName()}`);
                         this._scaleDelta[wIdx][i] = x;
-                    }   
+                    }
                 }
             }
         } else {
             throw new Error("Define a Scale first. Also check if wheel notes are defined");
         }
-        
+
         return {
-            colors : this._colors[wIdx], 
-            names : this._names[wIdx], 
-            chords : this._chordsStrings[wIdx], 
+            colors : this._colors[wIdx],
+            names : this._names[wIdx],
+            chords : this._chordsStrings[wIdx],
             delta : this._scaleDelta[wIdx]
         };
     },
@@ -204,7 +195,7 @@ export default {
     // returns convential scale roman degrees
 
     matchDegrees (scale, wIdx) {
-        
+
         this._degrees[wIdx] = [];
         if (!scale.scale.length) throw new Error ("You probably didn't pass a Scale Object.");
         let length = scale.scale.length;
@@ -224,7 +215,7 @@ export default {
     accidentals : {"sharp" : "#", "flat" : "b", "dblflat" : "bb", "dblsharp" : "##"},
 
     // matchColorsFromStaff (pitches, wIdx)
-    // sets new colors for a given wheel matching a previously selected chord from staff 
+    // sets new colors for a given wheel matching a previously selected chord from staff
     // (pitches = array of note(s) index from 0 returned from abc Synth)
 
     matchColorsFromStaff (pitches, wIdx) {
@@ -236,12 +227,12 @@ export default {
 
             newColors = [...this._colors[wIdx]];
             notes.forEach(note => newColors[this._names[wIdx].indexOf(note)] = this.palette.chord);
-        
+
         return newColors;
     },
 
     alterRootDic : {
-  
+
         'B#'  : 'C' ,
         'E#'  : 'F' ,
         'C##' : 'D' ,
@@ -261,9 +252,9 @@ export default {
         'Fb'  : 'E',
         'Cb'  : 'B'
       },
-      
+
       alterAltDic : {
-       
+
         'B#'  : '' ,
         'E#'  : '' ,
         'C##' : '' ,
@@ -279,29 +270,29 @@ export default {
         'Fbb' : '#',
         'Gbb' : '' ,
         'Abb' : '',
-        'Bbb' : '' 
+        'Bbb' : ''
       },
-      
+
       flatDic : {
-        
+
           'Ab' : 'G',
           'Bb' : 'A',
           'Cb' : 'B',
           'Db' : 'C',
           'Eb' : 'D',
           'Fb' : 'E',
-          'Gb' : 'F' 
+          'Gb' : 'F'
       },
-      
+
       flatAltDic : {
-        
+
           'Ab' : '#',
           'Bb' : '#',
           'Cb' : '',
           'Db' : '#',
           'Eb' : '#',
           'Fb' : '',
-          'Gb' : '#' 
+          'Gb' : '#'
       },
 
       chordDic : {
@@ -315,14 +306,14 @@ export default {
         'mΔ♭5'  : 'mmaj7b5',
         '7♭5'   : '7b5',
         '♭5'    : 'dim',
-        'dim6'  : 'dim7',       
+        'dim6'  : 'dim7',
         '+add1' : 'aug7',
     'no5add♭6'  : 'aug7',
-        '/Ab'   : '/G#', 
-        '/Bb'   : '/A#', 
-        '/Db'   : '/C#', 
-        '/Eb'   : '/D#', 
-        '/Gb'   : '/F#', 
+        '/Ab'   : '/G#',
+        '/Bb'   : '/A#',
+        '/Db'   : '/C#',
+        '/Eb'   : '/D#',
+        '/Gb'   : '/F#',
         'm/Ab'  : 'm/G#',
         'm/Bb'  : 'm/A#',
         'm/Db'  : 'm/C#',
@@ -347,4 +338,3 @@ export default {
         'Bb'     :   'Bb'
       }
 };
-
